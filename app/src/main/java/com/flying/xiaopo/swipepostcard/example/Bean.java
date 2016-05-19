@@ -1,8 +1,5 @@
 package com.flying.xiaopo.swipepostcard.example;
 
-/**
- * Created by Flying SnowBean on 2016/1/26.
- */
 public class Bean {
     private String text;
     private int resId;

@@ -1,26 +1,19 @@
 package com.flying.xiaopo.swipepostcard;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.support.v4.widget.ViewDragHelper;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.BounceInterpolator;
 import android.widget.FrameLayout;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * 滑动卡片，继承自FrameLayout
- * Created by Flying SnowBean on 2016/1/24.
- */
 public class SwipePostcard extends FrameLayout {
-    private final String TAG = SwipePostcard.class.getSimpleName();
 
     private ViewDragHelper mViewDragHelper;
     private Adapter mAdapter;
@@ -31,31 +24,45 @@ public class SwipePostcard extends FrameLayout {
     private int mMinDistance = 200;
     private int mDropNum = 0;
     private int mMaxPostcardNum = 3;
+    private boolean mIsBacked = true;
+    private int mDropDirection;
+    private int mOffsetY = 40;
+
+    public static final int DIRECTION_LEFT = 1 << 1;
+    public static final int DIRECTION_RIGHT = 1 << 2;
 
     private OnPostcardRunOutListener mOnPostcardRunOutListener;
+    private OnPostcardDismissListener mOnPostcardDismissListener;
 
     public SwipePostcard(Context context) {
         super(context);
-        init();
+        init(context);
     }
 
     public SwipePostcard(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init();
+        this(context, attrs, 0);
+        init(context);
     }
 
     public SwipePostcard(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init();
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.PoiSwipePostcard, defStyleAttr, 0);
+        setMaxPostcardNum(a.getInt(R.styleable.PoiSwipePostcard_maxCount, 3));
+        setOffsetY(a.getInt(R.styleable.PoiSwipePostcard_offsetY, 40));
+        setMinDistance(a.getInt(R.styleable.PoiSwipePostcard_minDistance, 200));
+        a.recycle();
+        init(context);
     }
 
     @TargetApi(21)
     public SwipePostcard(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
-        init();
+        init(context);
     }
 
-    private void init() {
+
+    private void init(Context context) {
+
         mViewDragHelper = ViewDragHelper.create(this, new ViewDragHelper.Callback() {
             @Override
             public boolean tryCaptureView(View child, int pointerId) {
@@ -80,8 +87,10 @@ public class SwipePostcard extends FrameLayout {
             @Override
             public void onViewCaptured(View capturedChild, int activePointerId) {
                 super.onViewCaptured(capturedChild, activePointerId);
-                startX = capturedChild.getLeft();
-                startY = capturedChild.getTop();
+                if (mIsBacked) {
+                    startX = capturedChild.getLeft();
+                    startY = capturedChild.getTop();
+                }
             }
 
             @Override
@@ -92,8 +101,15 @@ public class SwipePostcard extends FrameLayout {
                 float y = releasedChild.getY();
 
                 if (Math.abs(x - startX) > mMinDistance) {
-                    dropPostcard();
+                    if (x > startX)
+                        mDropDirection = DIRECTION_RIGHT;
+                    else
+                        mDropDirection = DIRECTION_LEFT;
+
+
+                    dropPostcard(mDropDirection);
                 } else {
+                    mIsBacked = false;
                     mViewDragHelper.settleCapturedViewAt((int) startX, (int) startY);
                     invalidate();
                 }
@@ -101,8 +117,16 @@ public class SwipePostcard extends FrameLayout {
         });
     }
 
-    private void dropPostcard() {
+    private void dropPostcard(int dropDirection) {
         removeViewAt(getChildCount() - 1);
+
+        View second = getChildAt(getChildCount() - 1);
+        View third = getChildAt(getChildCount() - 2);
+        if (second != null)
+            second.animate().scaleX(1f).scaleY(1f).translationYBy(-mOffsetY).setDuration(100).start();
+        if (third != null)
+            third.animate().scaleX(0.95f).scaleY(0.95f).translationYBy(-mOffsetY).setDuration(100).start();
+
         if (mCurrentPosition < mItemCount) {
             addPostcards(mCurrentPosition);
         }
@@ -110,6 +134,19 @@ public class SwipePostcard extends FrameLayout {
         if (mDropNum == mItemCount && mOnPostcardRunOutListener != null) {
             mOnPostcardRunOutListener.onPostcardRunOut();
         }
+
+        if (mOnPostcardDismissListener != null) {
+            mOnPostcardDismissListener.onPostcardDismiss(dropDirection);
+        }
+    }
+
+    public int getOffsetY() {
+        return mOffsetY;
+    }
+
+    public void setOffsetY(int offsetY) {
+        mOffsetY = offsetY;
+        relayout();
     }
 
     public int getMaxPostcardNum() {
@@ -117,8 +154,17 @@ public class SwipePostcard extends FrameLayout {
     }
 
     public void setMaxPostcardNum(int maxPostcardNum) {
-        if (maxPostcardNum<3) throw new IllegalArgumentException("the maxPostcardNum can not smaller than 3");
+        if (maxPostcardNum < 3)
+            throw new IllegalArgumentException("the maxPostcardNum can not smaller than 3");
         mMaxPostcardNum = maxPostcardNum;
+
+        relayout();
+    }
+
+    private void relayout() {
+        mCurrentPosition = 0;
+        removeAllViews();
+        layoutPostcards();
     }
 
     public Adapter getAdapter() {
@@ -139,9 +185,14 @@ public class SwipePostcard extends FrameLayout {
         return mMinDistance;
     }
 
+    public void setOnPostcardDismissListener(OnPostcardDismissListener onPostcardDismissListener) {
+        mOnPostcardDismissListener = onPostcardDismissListener;
+    }
+
     public void setOnPostcardRunOutListener(OnPostcardRunOutListener onPostcardRunOutListener) {
         mOnPostcardRunOutListener = onPostcardRunOutListener;
     }
+
 
     private void layoutPostcards() {
         int preCount = mItemCount < mMaxPostcardNum ? mItemCount : mMaxPostcardNum;
@@ -152,6 +203,20 @@ public class SwipePostcard extends FrameLayout {
 
     private void addPostcards(int position) {
         View postCard = getView(position);
+        if (position == 0) {
+            postCard.setScaleX(1);
+            postCard.setScaleY(1);
+            postCard.setTranslationY(0);
+        } else if (position == 1) {
+            postCard.setScaleX(0.95f);
+            postCard.setScaleY(0.95f);
+            postCard.setTranslationY(mOffsetY);
+        } else {
+            postCard.setScaleX(0.5f);
+            postCard.setScaleY(0.5f);
+            postCard.setTranslationY(2 * mOffsetY);
+            postCard.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).start();
+        }
         addView(postCard, 0);
         mCurrentPosition++;
     }
@@ -160,6 +225,8 @@ public class SwipePostcard extends FrameLayout {
     public void computeScroll() {
         if (mViewDragHelper.continueSettling(true))
             invalidate();
+        if (getChildAt(0) != null && getChildAt(0).getLeft() == startX && getChildAt(0).getTop() == startY)
+            mIsBacked = true;
     }
 
     @Override
@@ -206,6 +273,9 @@ public class SwipePostcard extends FrameLayout {
         void onPostcardRunOut();
     }
 
+    public interface OnPostcardDismissListener {
+        void onPostcardDismiss(int direction);
+    }
 }
 
 

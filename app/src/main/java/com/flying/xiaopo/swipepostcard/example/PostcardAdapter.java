@@ -4,8 +4,10 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.flying.xiaopo.swipepostcard.R;
 import com.flying.xiaopo.swipepostcard.SwipePostcard;
@@ -32,7 +34,7 @@ public class PostcardAdapter extends SwipePostcard.Adapter {
     }
 
     @Override
-    public void bindView(View view, int position) {
+    public void bindView(View view, final int position) {
         Bean bean = mData.get(position);
         ViewHolder holder = (ViewHolder) view.getTag();
         if (holder == null) {
@@ -41,6 +43,12 @@ public class PostcardAdapter extends SwipePostcard.Adapter {
         }
         Picasso.with(mContext).load(bean.getResId()).into(holder.mIvTaeyeon);
         holder.mTvDescribe.setText(bean.getText());
+        holder.mButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(v.getContext(), "You clicked -->" + position, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
@@ -51,10 +59,12 @@ public class PostcardAdapter extends SwipePostcard.Adapter {
     static class ViewHolder {
         ImageView mIvTaeyeon;
         TextView mTvDescribe;
+        Button mButton;
 
         ViewHolder(View view) {
             mIvTaeyeon = (ImageView) view.findViewById(R.id.iv_taeyeon);
             mTvDescribe = (TextView) view.findViewById(R.id.tv_describe);
+            mButton = (Button) view.findViewById(R.id.btn_event);
         }
     }
 }

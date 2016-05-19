@@ -4,12 +4,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
-/**
- * Created by Flying SnowBean on 2016/1/25.
- */
 public class SquareImageView extends ImageView {
-    private final String TAG = SquareImageView.class.getSimpleName();
-
 
     public SquareImageView(Context context) {
         super(context);

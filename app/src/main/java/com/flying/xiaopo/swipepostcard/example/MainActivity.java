@@ -1,14 +1,10 @@
 package com.flying.xiaopo.swipepostcard.example;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.flying.xiaopo.swipepostcard.R;
@@ -26,32 +22,43 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-        
         SwipePostcard postcard = (SwipePostcard) findViewById(R.id.postcards);
         List<Bean> data = new ArrayList<>();
 
-        int[] resIds = new int[]{R.drawable.p1,R.drawable.p2,R.drawable.p3,R.drawable.p4,R.drawable.p5,R.drawable.p6,R.drawable.p7,R.drawable.p8,R.drawable.p9,R.drawable.p10,R.drawable.p11,R.drawable.p12};
+        int[] resIds = new int[]{R.drawable.p1, R.drawable.p2, R.drawable.p3, R.drawable.p4, R.drawable.p5, R.drawable.p6, R.drawable.p7, R.drawable.p8, R.drawable.p9, R.drawable.p10, R.drawable.p11, R.drawable.p12};
         for (int i = 0; i < 12; i++) {
-            Bean bean = new Bean(resIds[i],"世界上最好的金泰妍->"+i);
+            Bean bean = new Bean(resIds[i], "世界上最好的金泰妍->" + i);
             data.add(bean);
         }
-        PostcardAdapter adapter = new PostcardAdapter(this,data);
-        postcard.setAdapter(adapter);
-        postcard.setMaxPostcardNum(3);
-        postcard.setOnPostcardRunOutListener(new SwipePostcard.OnPostcardRunOutListener() {
-            @Override
-            public void onPostcardRunOut() {
-                Toast.makeText(MainActivity.this, "Run out!", Toast.LENGTH_SHORT).show();
-            }
-        });
+
+        PostcardAdapter adapter = new PostcardAdapter(this, data);
+        if (postcard != null) {
+            postcard.setAdapter(adapter);
+            postcard.setMaxPostcardNum(3);
+            postcard.setOffsetY(0);
+            postcard.setMinDistance(200);
+            postcard.setOnPostcardRunOutListener(new SwipePostcard.OnPostcardRunOutListener() {
+                @Override
+                public void onPostcardRunOut() {
+                    Toast.makeText(MainActivity.this, "Run out!", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            postcard.setOnPostcardDismissListener(new SwipePostcard.OnPostcardDismissListener() {
+                @Override
+                public void onPostcardDismiss(int direction) {
+                    if (direction == SwipePostcard.DIRECTION_LEFT) {
+                        Toast.makeText(MainActivity.this, "Left", Toast.LENGTH_SHORT).show();
+                    } else if (direction == SwipePostcard.DIRECTION_RIGHT) {
+                        Toast.makeText(MainActivity.this, "right", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+            Toast.makeText(MainActivity.this, postcard.getMaxPostcardNum() + " ", Toast.LENGTH_SHORT).show();
+        }
+
+
+
     }
 
     @Override
