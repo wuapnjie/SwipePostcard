@@ -48,7 +48,7 @@ public class SwipePostcard extends FrameLayout {
         super(context, attrs, defStyleAttr);
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.PoiSwipePostcard, defStyleAttr, 0);
         setMaxPostcardNum(a.getInt(R.styleable.PoiSwipePostcard_maxCount, 3));
-        setOffsetY(a.getInt(R.styleable.PoiSwipePostcard_offsetY, 40));
+        setOffsetY(a.getDimensionPixelSize(R.styleable.PoiSwipePostcard_offsetY, 40));
         setMinDistance(a.getInt(R.styleable.PoiSwipePostcard_minDistance, 200));
         a.recycle();
         init(context);

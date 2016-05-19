@@ -28,7 +28,7 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         app:maxCount="5"
         app:minDistance="0"
-        app:offsetY="60" />
+        app:offsetY="24dp" />
 
 
 </android.support.design.widget.CoordinatorLayout>

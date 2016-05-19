@@ -19,7 +19,7 @@
 
     <declare-styleable name="PoiSwipePostcard">
         <attr name="maxCount" format="integer" />
-        <attr name="offsetY" format="integer" />
+        <attr name="offsetY" format="dimension" />
         <attr name="minDistance" format="integer" />
     </declare-styleable>
 </resources>

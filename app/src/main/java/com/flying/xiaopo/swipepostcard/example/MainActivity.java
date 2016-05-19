@@ -35,8 +35,8 @@ public class MainActivity extends AppCompatActivity {
         if (postcard != null) {
             postcard.setAdapter(adapter);
             postcard.setMaxPostcardNum(3);
-            postcard.setOffsetY(0);
-            postcard.setMinDistance(200);
+//            postcard.setOffsetY(67);
+//            postcard.setMinDistance(200);
             postcard.setOnPostcardRunOutListener(new SwipePostcard.OnPostcardRunOutListener() {
                 @Override
                 public void onPostcardRunOut() {
